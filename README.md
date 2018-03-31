@@ -16,3 +16,7 @@ compile and run using:
 ```
 gcc snake.c -o snake -lncurses -lpthread && ./snake
 ```
+
+# example
+
+[asciinema game example](https://asciinema.org/a/N1qgDuEvJpThShuyRr0uR5QtZ)
