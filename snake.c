@@ -134,15 +134,6 @@ int main(void)
 	/* end ncurses for a sane terminal */
 	endwin();
 	printf("final score: %d\n", snake->score);
-	/* free body pieces */
-	piece *finger = snake->firstpiece;
-	while (finger != NULL)
-	{
-		free(finger->prev);
-		finger = finger->next;
-	}
-	free(snake->firstpiece);
-	free(finger);
 	return 0;
 }
 
@@ -247,7 +238,7 @@ void draw(head *snake, food *eat)
 		mvwaddch(snake->area, finger->y, finger->x, ACS_BLOCK);
 		finger = finger->next;
 	}
-	free (finger);
+	free(finger);
 	mvprintw(0, 0, "score: %d\n", snake->score);
 	mvprintw(HEIGHT+2, 0, "  'wasd/hjkl' to control the snake.\n" \
 			      "  'b' to toggle bot control.\n" \
