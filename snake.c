@@ -110,12 +110,16 @@ int main(void)
 				snake->direction = UP;
 			break;
 		case 'a':
-		case 'h':
-			snake->direction = LEFT;
+		case 'h':	
+			/* prevent changing direction into yourself */
+			if (snake->direction != RIGHT)
+				snake->direction = LEFT;
 			break;
 		case 'd':
 		case 'l':
-			snake->direction = RIGHT;
+			/* prevent changing direction into yourself */
+			if (snake->direction != LEFT)
+				snake->direction = RIGHT;
 			break;
 		case 'q': /* q quits the game */
 			snake->state = 0;
