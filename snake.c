@@ -99,11 +99,15 @@ int main(void)
 		/* direction key detection */
 		case 's':
 		case 'j':
-			snake->direction = DOWN;
+			/* prevent changing direction into yourself */
+			if (snake->direction != UP)
+				snake->direction = DOWN;
 			break;
 		case 'w':
 		case 'k':
-			snake->direction = UP;
+			/* prevent changing direction into yourself */
+			if (snake->direction != DOWN)
+				snake->direction = UP;
 			break;
 		case 'a':
 		case 'h':
