@@ -133,6 +133,7 @@ int main(void)
 	}
 	/* end ncurses for a sane terminal */
 	endwin();
+	pthread_cancel(updatethread);
 	printf("final score: %d\n", snake->score);
 	return 0;
 }
@@ -210,7 +211,6 @@ void *update(head *snake)
 				}
 				finger = finger->next;
 			}
-		free(finger);
 		/* check if the game should play itself */
 		if (snake->npc)
 			npc_logic(snake, &eat);
@@ -238,7 +238,6 @@ void draw(head *snake, food *eat)
 		mvwaddch(snake->area, finger->y, finger->x, ACS_BLOCK);
 		finger = finger->next;
 	}
-	free(finger);
 	mvprintw(0, 0, "score: %d\n", snake->score);
 	mvprintw(HEIGHT+2, 0, "  'wasd/hjkl' to control the snake.\n" \
 			      "  'b' to toggle bot control.\n" \
@@ -264,7 +263,6 @@ void setup_food(head *snake, food *eat)
 			goto restart;
 		finger = finger->next;
 	}
-	free(finger);
 	/* make sure the food is in bounds */
 	if (eat->x < 3 ||
 	    eat->x > WIDTH-3)
