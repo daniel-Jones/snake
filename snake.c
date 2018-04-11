@@ -285,7 +285,7 @@ void create_body(head *snake)
 		/* these aren't used without updating, so the value doesn't really matter */
 		new->oldx = 0;
 		new->oldy = 0;
-		/* our head wont will never have a prev */
+		/* our head will never have a prev */
 		new->prev = NULL;
 		snake->firstpiece = new;
 		/* we have nothing else to do, so return */
@@ -315,6 +315,66 @@ void create_body(head *snake)
 
 void npc_logic(head *snake, food *eat)
 {
+	/* 
+	 * our goal location is eat->x and eat->y
+	 * we must avoid:
+	 * - running into our own body
+	 * - running into the edge
+	 * how to achieve this:
+	 * - scan towards the x and y of the food (up/down and left/right, one of each)
+	 * - if we hit the edge that is a safe direction to go
+	 * - if we hit a body piece it isn't safe, but not out of the picture yet
+	 * - if we hit the food, go that direction
+	 */
+
+	/*
+	 * these hold our desired x and y direction, defaults aren't important.
+	 * a -1 means we are at the correct x or y position
+	 */
+	int xdir = UP;
+	int ydir = RIGHT;
+	/* find our desired x position */
+	/* check if the food is to the left of the snake */
+	if (eat->x < snake->x)
+		xdir = LEFT;
+	/* check if the food is to the right of the snake */
+	else if (eat->x > snake->x)
+	xdir = RIGHT;
+	/* the food must be on the same x position as the snake */
+	else
+		xdir = -1;
+
+	/* find our desired y position */
+	/* check if the food is below the snake */
+	if (eat->y > snake->y)
+		ydir = DOWN;
+	/* check if the food is abovce the snake */
+	else if (eat->y < snake->y)
+		ydir = UP;
+	/* the food must be on the same y position as the snake */
+	else
+		ydir = -1;
+	/* if either value is -1, use the other and return */
+	if (xdir == -1)
+	{
+		snake->direction = ydir;
+		return;
+	}
+	if (ydir == -1)
+	{
+		snake->direction = xdir;
+		return;
+	}
+	/* randomly choose which desired direciton to take */
+	int x = rand() % 2;
+	if (x == 0)
+		snake->direction = ydir;
+	else
+		snake->direction = xdir;
+
+
+
+	/*
 	if (snake->y > eat->y)
 		snake->direction = UP;
 	else if (snake->y < eat->y)
@@ -323,4 +383,5 @@ void npc_logic(head *snake, food *eat)
 		snake->direction = LEFT;
 	else if (snake->x < eat->x)
 		snake->direction = RIGHT;
-	}
+	*/
+}
