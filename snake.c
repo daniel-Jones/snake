@@ -78,6 +78,7 @@ int main(void)
 	getmaxyx(stdscr, h, w);
 	/* setup snake */
 	head *snake;
+	snake->score = 0;
 	snake->x = 0;
 	snake->y = 5;
 	snake->oldx = snake->x;
