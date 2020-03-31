@@ -49,7 +49,7 @@ typedef struct snakehead
 	int score; /* incremented when food is eaten */
 	piece *firstpiece; /* will point to the head of the snakepiece linked list or null */
 	int state; /* game state int, 1 = running 0 = quit */
-	int npc; /* determines if the snake controls itself 1 = bot 0 = human */
+	int wrap; /* warp on edges */
 	WINDOW *area; /* terrible place to store the play area window */
 } head;
 
@@ -62,7 +62,6 @@ void *update(head *snake);
 void draw(head *snake, food *eat);
 void setup_food(head *snake, food *eat);
 void create_body(head *snake);
-void npc_logic(head *snake, food *eat);
 
 int main(void)
 {
@@ -85,7 +84,7 @@ int main(void)
 	snake->oldy = snake->y;
 	snake->direction = RIGHT;
 	snake->state = 1;
-	snake->npc = 0; /* start asa huma nplayer */
+	snake->wrap = 1;
 	snake->firstpiece = NULL;
 	/* setup game area */
 	snake->area = newwin(HEIGHT, WIDTH, 1, 8);
@@ -124,11 +123,11 @@ int main(void)
 			if (snake->direction != LEFT)
 				snake->direction = RIGHT;
 			break;
+		case 'f':
+			snake->wrap = !snake->wrap;
+			break;
 		case 'q': /* q quits the game */
 			snake->state = 0;
-			break;
-		case 'b': /* b toggles bot playing */
-			snake->npc = !snake->npc;
 			break;
 		default:
 			break;
@@ -168,12 +167,30 @@ void *update(head *snake)
 		default:
 			break;
 		}
-		/* detect if head is touching the border */
-		if (snake->x == WIDTH-1 ||
-		    snake-> y == HEIGHT-1 ||
-		    snake->x == 0 ||
-		    snake->y == 0)
-			snake->state = 0;
+		if (snake->wrap == 0)
+		{
+			/* detect if head is touching the border */
+			if (snake->x == WIDTH-1 ||
+			    snake-> y == HEIGHT-1 ||
+			    snake->x == 0 ||
+			    snake->y == 0)
+			{
+				snake->state = 0;
+			}
+		}	
+		else
+		{
+			/* check if we should wrap snake */
+			if (snake->x == WIDTH-1)
+				snake->x = 1;
+			if (snake->x == 0)
+				snake->x = WIDTH-2;
+
+			if (snake->y == HEIGHT-1)
+				snake->y = 1;
+			if (snake->y == 0)
+				snake->y = HEIGHT-2;
+		}
 		/* check if food eaten */
 		if (snake->x == eat.x &&
 		    snake->y == eat.y)
@@ -215,8 +232,6 @@ void *update(head *snake)
 				finger = finger->next;
 			}
 		/* check if the game should play itself */
-		if (snake->npc)
-			npc_logic(snake, &eat);
 		draw(snake, &eat);
 		/* sleep to keep game at a reasonable speed */
 		usleep(200000);
@@ -243,7 +258,7 @@ void draw(head *snake, food *eat)
 	}
 	mvprintw(0, 0, "score: %d\n", snake->score);
 	mvprintw(HEIGHT+2, 0, "  'wasd/hjkl' to control the snake.\n" \
-			      "  'b' to toggle bot control.\n" \
+			      "  'f' to toggle wrapping.\n" \
 			      "  'q' to quit.");
 	refresh();
 	wrefresh(snake->area);
@@ -314,77 +329,4 @@ void create_body(head *snake)
 	new->oldy = 0;
 	/* set our new piece as the last piece in the list */
 	finger->next = new;
-}
-
-void npc_logic(head *snake, food *eat)
-{
-	/* 
-	 * our goal location is eat->x and eat->y
-	 * we must avoid:
-	 * - running into our own body
-	 * - running into the edge
-	 * how to achieve this:
-	 * - scan towards the x and y of the food (up/down and left/right, one of each)
-	 * - if we hit the edge that is a safe direction to go
-	 * - if we hit a body piece it isn't safe, but not out of the picture yet
-	 * - if we hit the food, go that direction
-	 */
-
-	/*
-	 * these hold our desired x and y direction, defaults aren't important.
-	 * a -1 means we are at the correct x or y position
-	 */
-	int xdir = UP;
-	int ydir = RIGHT;
-	/* find our desired x position */
-	/* check if the food is to the left of the snake */
-	if (eat->x < snake->x)
-		xdir = LEFT;
-	/* check if the food is to the right of the snake */
-	else if (eat->x > snake->x)
-	xdir = RIGHT;
-	/* the food must be on the same x position as the snake */
-	else
-		xdir = -1;
-
-	/* find our desired y position */
-	/* check if the food is below the snake */
-	if (eat->y > snake->y)
-		ydir = DOWN;
-	/* check if the food is abovce the snake */
-	else if (eat->y < snake->y)
-		ydir = UP;
-	/* the food must be on the same y position as the snake */
-	else
-		ydir = -1;
-	/* if either value is -1, use the other and return */
-	if (xdir == -1)
-	{
-		snake->direction = ydir;
-		return;
-	}
-	if (ydir == -1)
-	{
-		snake->direction = xdir;
-		return;
-	}
-	/* randomly choose which desired direciton to take */
-	int x = rand() % 2;
-	if (x == 0)
-		snake->direction = ydir;
-	else
-		snake->direction = xdir;
-
-
-
-	/*
-	if (snake->y > eat->y)
-		snake->direction = UP;
-	else if (snake->y < eat->y)
-		snake->direction = DOWN;
-	else if (snake->x > eat->x)
-		snake->direction = LEFT;
-	else if (snake->x < eat->x)
-		snake->direction = RIGHT;
-	*/
 }
